@@ -7,20 +7,24 @@ let path = {
         css: project_folder + "/css/",
         js: project_folder + "/js/",
         img: project_folder + "/img/",
+        svg: project_folder + "/svg/",
         fonts: project_folder + "/fonts/",
+        fontawesome: project_folder + "/webfonts/",
     },
     src: {
         html: [source_folder + "/*.html", "!" + source_folder + "/_*.html"],
         css: source_folder + "/scss/style.scss",
         js: source_folder + "/js/script.js",
         img: source_folder + "/img/**/*.{jpg,png,svg,gif,ico,webp}",
+        svg: source_folder + "/svg/**/*.svg",
         fonts: source_folder + "/fonts/*.{ttf,woff,woff2}",
+        fontawesome: "node_modules/@fortawesome/fontawesome-free/webfonts/*",
     },
     watch: {
         html: source_folder + "/**/*.html",
         css: source_folder + "/scss/**/*.scss",
         js: source_folder + "/js/**/*.js",
-        img: source_folder + "/img/**/*.{jpg,png,svg,gif,ico,webp}",
+        img: source_folder + "/img/**/*.{jpg,png,gif,ico,webp}",
     },
     clean: "./" + project_folder + "/",
 };
@@ -39,9 +43,7 @@ let { src, dest } = require("gulp"),
     imagemin = require("gulp-imagemin"),
     webp = require("gulp-webp"),
     webphtml = require("gulp-webp-html"),
-    webpcss = require("gulp-webpcss"),
-    ttf2woff = require("gulp-ttf2woff"),
-    ttf2woff2 = require("gulp-ttf2woff2");
+    webpcss = require("gulp-webpcss");
 
 function browserSync(params) {
     browsersync.init({
@@ -54,11 +56,7 @@ function browserSync(params) {
 }
 
 function html() {
-    return src(path.src.html)
-        .pipe(fileinclude())
-        .pipe(webphtml())
-        .pipe(dest(path.build.html))
-        .pipe(browsersync.stream());
+    return src(path.src.html).pipe(fileinclude()).pipe(webphtml()).pipe(dest(path.build.html)).pipe(browsersync.stream());
 }
 
 function css() {
@@ -126,6 +124,14 @@ function fonts() {
     return src(path.src.fonts).pipe(dest(path.build.fonts));
 }
 
+function svg() {
+    return src(path.src.svg).pipe(dest(path.build.svg));
+}
+
+function fontawesome() {
+    return src(path.src.fontawesome).pipe(dest(path.build.fontawesome));
+}
+
 function watchFiles(params) {
     gulp.watch([path.watch.html], html);
     gulp.watch([path.watch.css], css);
@@ -137,9 +143,11 @@ function clean(params) {
     return del(path.clean);
 }
 
-let build = gulp.series(clean, gulp.parallel(html, css, js, images, fonts));
+let build = gulp.series(clean, gulp.parallel(html, css, js, images, fonts, svg, fontawesome));
 let watch = gulp.parallel(build, watchFiles, browserSync);
 
+exports.fontawesome = fontawesome;
+exports.svg = svg;
 exports.fonts = fonts;
 exports.images = images;
 exports.js = js;
